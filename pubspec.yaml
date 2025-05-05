@@ -13,6 +13,7 @@ dependencies:
   google_fonts: ^6.2.1
   iconsax: ^0.0.8
   lordicon: ^1.0.3
+  http:
 
 dev_dependencies:
   flutter_test:
