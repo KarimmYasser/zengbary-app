@@ -19,9 +19,13 @@ class _HitTargetScreenState extends State<HitTargetScreen> {
   bool yellowSelected = false;
   bool blueSelected = false;
   bool error = false;
-  String baseUrl = 'http://localhost:5000'; // Default API URL
+  String baseUrl = 'http://192.168.1.16:5000'; // Default API URL
   String serverStatus = 'stopped'; // Initial server status
-  bool isLoading = false; // Loading state for API calls
+
+  // Replace single isLoading with specific loading states
+  bool isStartLoading = false;
+  bool isStopLoading = false;
+  bool isShootLoading = false;
 
   void _updateBaseUrl(String value) {
     setState(() {
@@ -36,7 +40,7 @@ class _HitTargetScreenState extends State<HitTargetScreen> {
   // Start server function
   Future<void> _handleStartServer() async {
     setState(() {
-      isLoading = true;
+      isStartLoading = true;
     });
 
     try {
@@ -64,7 +68,7 @@ class _HitTargetScreenState extends State<HitTargetScreen> {
       ).showSnackBar(SnackBar(content: Text('Error starting server: $error')));
     } finally {
       setState(() {
-        isLoading = false;
+        isStartLoading = false;
       });
     }
   }
@@ -72,7 +76,7 @@ class _HitTargetScreenState extends State<HitTargetScreen> {
   // Stop server function
   Future<void> _handleStopServer() async {
     setState(() {
-      isLoading = true;
+      isStopLoading = true;
     });
 
     try {
@@ -100,15 +104,30 @@ class _HitTargetScreenState extends State<HitTargetScreen> {
       ).showSnackBar(SnackBar(content: Text('Error stopping server: $error')));
     } finally {
       setState(() {
-        isLoading = false;
+        isStopLoading = false;
       });
     }
   }
 
   // Fire color function
   Future<void> _handleFireColor(String color) async {
+    // Check if server is running before sending request
+    if (serverStatus != 'running') {
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Server is not running. Please activate the server first.',
+          ),
+          backgroundColor: Colors.orange,
+          duration: Duration(seconds: 3),
+        ),
+      );
+      return;
+    }
+
     setState(() {
-      isLoading = true;
+      isShootLoading = true;
     });
 
     try {
@@ -137,13 +156,16 @@ class _HitTargetScreenState extends State<HitTargetScreen> {
       ).showSnackBar(SnackBar(content: Text('Error firing color: $error')));
     } finally {
       setState(() {
-        isLoading = false;
+        isShootLoading = false;
       });
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    // Check if shoot action should be enabled based on server status
+    bool canShoot = serverStatus == 'running' && !isShootLoading;
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.black,
@@ -225,33 +247,39 @@ class _HitTargetScreenState extends State<HitTargetScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     CupertinoButton(
-                      onPressed: isLoading ? null : _handleStartServer,
+                      onPressed: isStartLoading ? null : _handleStartServer,
                       color: Colors.white,
                       disabledColor: Colors.grey[400]!,
-                      child: Text(
-                        'Activate',
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontFamily: 'Urbanist',
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
+                      child:
+                          isStartLoading
+                              ? CupertinoActivityIndicator(color: Colors.black)
+                              : Text(
+                                'Activate',
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontFamily: 'Urbanist',
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                ),
+                              ),
                     ),
                     SizedBox(width: 20),
                     CupertinoButton(
-                      onPressed: isLoading ? null : _handleStopServer,
+                      onPressed: isStopLoading ? null : _handleStopServer,
                       color: Colors.redAccent,
                       disabledColor: Colors.redAccent.withAlpha(128),
-                      child: Text(
-                        'Stop',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontFamily: 'Urbanist',
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
+                      child:
+                          isStopLoading
+                              ? CupertinoActivityIndicator()
+                              : Text(
+                                'Stop',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontFamily: 'Urbanist',
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                ),
+                              ),
                     ),
                   ],
                 ),
@@ -274,6 +302,14 @@ class _HitTargetScreenState extends State<HitTargetScreen> {
                   'Select a Color to Shoot:',
                   style: TextStyle(color: Colors.white, fontSize: 18),
                 ),
+                if (serverStatus != 'running')
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8.0),
+                    child: Text(
+                      'Activate the server before shooting',
+                      style: TextStyle(color: Colors.orange, fontSize: 14),
+                    ),
+                  ),
                 SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -446,14 +482,14 @@ class _HitTargetScreenState extends State<HitTargetScreen> {
                 Container(
                   decoration: BoxDecoration(
                     border: Border.all(
-                      color: isLoading ? Colors.grey : Colors.white,
+                      color: canShoot ? Colors.white : Colors.grey,
                       width: 5,
                     ),
                     borderRadius: BorderRadius.circular(100),
                   ),
                   child: CupertinoButton(
                     onPressed:
-                        isLoading
+                        isShootLoading || serverStatus != 'running'
                             ? null
                             : () {
                               if (redSelected) {
@@ -482,13 +518,16 @@ class _HitTargetScreenState extends State<HitTargetScreen> {
                     borderRadius: BorderRadius.circular(50),
                     color: Colors.red,
                     disabledColor: Colors.red.withAlpha(128),
-                    child: Text(
-                      'Shoot',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                    child:
+                        isShootLoading
+                            ? CupertinoActivityIndicator()
+                            : Text(
+                              'Shoot',
+                              style: TextStyle(
+                                color: canShoot ? Colors.white : Colors.grey,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                   ),
                 ),
                 SizedBox(height: 20),
