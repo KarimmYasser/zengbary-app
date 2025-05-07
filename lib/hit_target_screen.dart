@@ -72,44 +72,44 @@ class _HitTargetScreenState extends State<HitTargetScreen> {
         ),
         child: SingleChildScrollView(
           // Add scrolling capability
-          child: Column(
-            children: [
-              SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  CupertinoButton(
-                    onPressed: () {},
-                    color: Colors.white,
-                    child: Text(
-                      'Activate',
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontFamily: 'Urbanist',
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    CupertinoButton(
+                      onPressed: () {},
+                      color: Colors.white,
+                      child: Text(
+                        'Activate',
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontFamily: 'Urbanist',
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
                       ),
                     ),
-                  ),
-                  SizedBox(width: 20),
-                  CupertinoButton(
-                    onPressed: () {},
-                    color: Colors.redAccent,
-                    child: Text(
-                      'Stop',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontFamily: 'Urbanist',
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
+                    SizedBox(width: 20),
+                    CupertinoButton(
+                      onPressed: () {},
+                      color: Colors.redAccent,
+                      child: Text(
+                        'Stop',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontFamily: 'Urbanist',
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
                       ),
                     ),
-                  ),
-                ],
-              ),
-              Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: TextField(
+                  ],
+                ),
+                SizedBox(height: 20),
+                TextField(
                   style: TextStyle(color: Colors.white),
                   decoration: InputDecoration(
                     filled: true,
@@ -122,206 +122,218 @@ class _HitTargetScreenState extends State<HitTargetScreen> {
                   ),
                   onSubmitted: _updateBaseUrl,
                 ),
-              ),
-              Text(
-                'Select a Color to Shoot:',
-                style: TextStyle(color: Colors.white, fontSize: 18),
-              ),
-              SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  InkWell(
-                    onTap: () {
-                      setState(() {
-                        redSelected = !redSelected;
-                        blueSelected = false;
-                        yellowSelected = false;
-                      });
-                    },
-                    child: Container(
-                      width: 80,
-                      height: 110,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10),
-                        color: Colors.grey,
-                        border: Border.all(
-                          color:
-                              redSelected ? Colors.purple : Colors.transparent,
-                          width: 2,
-                        ),
-                      ),
-                      child: Column(
-                        children: [
-                          SizedBox(height: 5),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              if (redSelected)
-                                Icon(
-                                  Iconsax.tick_circle5,
-                                  color: Colors.purple,
-                                  size: 15,
-                                ),
-                              SizedBox(width: 12, height: 15),
-                            ],
-                          ),
-                          Icon(
-                            Iconsax.book_square1,
-                            color: Colors.red,
-                            size: 50,
-                          ),
-                          SizedBox(height: 5),
-                          Text(
-                            'Red',
-                            style: TextStyle(color: Colors.white, fontSize: 12),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  SizedBox(width: 20),
-                  InkWell(
-                    onTap: () {
-                      setState(() {
-                        redSelected = false;
-                        blueSelected = !blueSelected;
-                        yellowSelected = false;
-                      });
-                    },
-                    child: Container(
-                      width: 80,
-                      height: 110,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10),
-                        color: Colors.grey,
-                        border: Border.all(
-                          color:
-                              blueSelected ? Colors.purple : Colors.transparent,
-                          width: 2,
-                        ),
-                      ),
-                      child: Column(
-                        children: [
-                          SizedBox(height: 5),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              if (blueSelected)
-                                Icon(
-                                  Iconsax.tick_circle5,
-                                  color: Colors.purple,
-                                  size: 15,
-                                ),
-                              SizedBox(width: 12, height: 15),
-                            ],
-                          ),
-                          Icon(
-                            Iconsax.book_square1,
-                            color: Colors.indigo,
-                            size: 50,
-                          ),
-                          SizedBox(height: 5),
-                          Text(
-                            'Blue',
-                            style: TextStyle(color: Colors.white, fontSize: 12),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  SizedBox(width: 20),
-                  InkWell(
-                    onTap: () {
-                      setState(() {
-                        redSelected = false;
-                        blueSelected = false;
-                        yellowSelected = !yellowSelected;
-                      });
-                    },
-                    child: Container(
-                      width: 80,
-                      height: 110,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10),
-                        color: Colors.grey,
-                        border: Border.all(
-                          color:
-                              yellowSelected
-                                  ? Colors.purple
-                                  : Colors.transparent,
-                          width: 2,
-                        ),
-                      ),
-                      child: Column(
-                        children: [
-                          SizedBox(height: 5),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              if (yellowSelected)
-                                Icon(
-                                  Iconsax.tick_circle5,
-                                  color: Colors.purple,
-                                  size: 15,
-                                ),
-                              SizedBox(width: 12, height: 15),
-                            ],
-                          ),
-                          Icon(
-                            Iconsax.book_square1,
-                            color: Colors.amber,
-                            size: 50,
-                          ),
-                          SizedBox(height: 5),
-                          Text(
-                            'Yellow',
-                            style: TextStyle(color: Colors.white, fontSize: 12),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(height: 50),
-              Container(
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.white, width: 5),
-                  borderRadius: BorderRadius.circular(100),
-                ),
-                child: CupertinoButton(
-                  onPressed: () {
-                    if (yellowSelected || redSelected || blueSelected) {
-                      error = false;
-                    } else {
-                      error = true;
-                    }
-                    setState(() {
-                      redSelected = false;
-                      blueSelected = false;
-                      yellowSelected = false;
-                    });
-                  },
-                  minSize: 100,
-                  borderRadius: BorderRadius.circular(50),
-                  color: Colors.red,
-                  child: Text(
-                    'Shoot',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
-              SizedBox(height: 20),
-              if (error)
+                SizedBox(height: 20),
                 Text(
-                  'Please select a color to shoot first',
-                  style: TextStyle(color: Colors.red, fontSize: 12),
+                  'Select a Color to Shoot:',
+                  style: TextStyle(color: Colors.white, fontSize: 18),
                 ),
-            ],
+                SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    InkWell(
+                      onTap: () {
+                        setState(() {
+                          redSelected = !redSelected;
+                          blueSelected = false;
+                          yellowSelected = false;
+                        });
+                      },
+                      child: Container(
+                        width: 80,
+                        height: 110,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10),
+                          color: Colors.grey,
+                          border: Border.all(
+                            color:
+                                redSelected
+                                    ? Colors.purple
+                                    : Colors.transparent,
+                            width: 2,
+                          ),
+                        ),
+                        child: Column(
+                          children: [
+                            SizedBox(height: 5),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                if (redSelected)
+                                  Icon(
+                                    Iconsax.tick_circle5,
+                                    color: Colors.purple,
+                                    size: 15,
+                                  ),
+                                SizedBox(width: 12, height: 15),
+                              ],
+                            ),
+                            Icon(
+                              Iconsax.book_square1,
+                              color: Colors.red,
+                              size: 50,
+                            ),
+                            SizedBox(height: 5),
+                            Text(
+                              'Red',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    InkWell(
+                      onTap: () {
+                        setState(() {
+                          redSelected = false;
+                          blueSelected = !blueSelected;
+                          yellowSelected = false;
+                        });
+                      },
+                      child: Container(
+                        width: 80,
+                        height: 110,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10),
+                          color: Colors.grey,
+                          border: Border.all(
+                            color:
+                                blueSelected
+                                    ? Colors.purple
+                                    : Colors.transparent,
+                            width: 2,
+                          ),
+                        ),
+                        child: Column(
+                          children: [
+                            SizedBox(height: 5),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                if (blueSelected)
+                                  Icon(
+                                    Iconsax.tick_circle5,
+                                    color: Colors.purple,
+                                    size: 15,
+                                  ),
+                                SizedBox(width: 12, height: 15),
+                              ],
+                            ),
+                            Icon(
+                              Iconsax.book_square1,
+                              color: Colors.indigo,
+                              size: 50,
+                            ),
+                            SizedBox(height: 5),
+                            Text(
+                              'Blue',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    InkWell(
+                      onTap: () {
+                        setState(() {
+                          redSelected = false;
+                          blueSelected = false;
+                          yellowSelected = !yellowSelected;
+                        });
+                      },
+                      child: Container(
+                        width: 80,
+                        height: 110,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10),
+                          color: Colors.grey,
+                          border: Border.all(
+                            color:
+                                yellowSelected
+                                    ? Colors.purple
+                                    : Colors.transparent,
+                            width: 2,
+                          ),
+                        ),
+                        child: Column(
+                          children: [
+                            SizedBox(height: 5),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                if (yellowSelected)
+                                  Icon(
+                                    Iconsax.tick_circle5,
+                                    color: Colors.purple,
+                                    size: 15,
+                                  ),
+                                SizedBox(width: 12, height: 15),
+                              ],
+                            ),
+                            Icon(
+                              Iconsax.book_square1,
+                              color: Colors.amber,
+                              size: 50,
+                            ),
+                            SizedBox(height: 5),
+                            Text(
+                              'Yellow',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 50),
+                Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.white, width: 5),
+                    borderRadius: BorderRadius.circular(100),
+                  ),
+                  child: CupertinoButton(
+                    onPressed: () {
+                      if (yellowSelected || redSelected || blueSelected) {
+                        error = false;
+                      } else {
+                        error = true;
+                      }
+                      setState(() {
+                        redSelected = false;
+                        blueSelected = false;
+                        yellowSelected = false;
+                      });
+                    },
+                    minSize: 100,
+                    borderRadius: BorderRadius.circular(50),
+                    color: Colors.red,
+                    child: Text(
+                      'Shoot',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(height: 20),
+                if (error)
+                  Text(
+                    'Please select a color to shoot first',
+                    style: TextStyle(color: Colors.red, fontSize: 12),
+                  ),
+              ],
+            ),
           ),
         ),
       ),
