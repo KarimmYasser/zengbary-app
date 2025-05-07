@@ -1,6 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 import 'custom_drawer.dart';
 import 'home_screen.dart';
@@ -17,14 +19,127 @@ class _HitTargetScreenState extends State<HitTargetScreen> {
   bool yellowSelected = false;
   bool blueSelected = false;
   bool error = false;
-  String baseUrl = 'https://example.com';
+  String baseUrl = 'http://localhost:5000'; // Default API URL
+  String serverStatus = 'stopped'; // Initial server status
+  bool isLoading = false; // Loading state for API calls
 
   void _updateBaseUrl(String value) {
-    baseUrl = value; // Update the baseUrl
+    setState(() {
+      baseUrl = value; // Update the baseUrl
+    });
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(SnackBar(content: Text('Base URL updated successfully!')));
+  }
+
+  // Start server function
+  Future<void> _handleStartServer() async {
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/start'),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        setState(() {
+          serverStatus = data['status'] ?? 'unknown';
+        });
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Server started successfully')));
+      } else {
+        throw Exception('Failed to start server');
+      }
+    } catch (error) {
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error starting server: $error')));
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+  // Stop server function
+  Future<void> _handleStopServer() async {
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/stop'),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        setState(() {
+          serverStatus = data['status'] ?? 'unknown';
+        });
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Server stopped successfully')));
+      } else {
+        throw Exception('Failed to stop server');
+      }
+    } catch (error) {
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error stopping server: $error')));
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+  // Fire color function
+  Future<void> _handleFireColor(String color) async {
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/color'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'color': color}),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        setState(() {
+          serverStatus = data['status'] ?? 'unknown';
+        });
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Color $color fired successfully')),
+        );
+      } else {
+        throw Exception('Failed to fire color');
+      }
+    } catch (error) {
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error firing color: $error')));
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
   }
 
   @override
@@ -71,17 +186,48 @@ class _HitTargetScreenState extends State<HitTargetScreen> {
           ),
         ),
         child: SingleChildScrollView(
-          // Add scrolling capability
           child: Padding(
             padding: const EdgeInsets.all(20),
             child: Column(
               children: [
+                // Server Status Display
+                Container(
+                  padding: EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[800],
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Server Status: ',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        serverStatus,
+                        style: TextStyle(
+                          color:
+                              serverStatus == 'running'
+                                  ? Colors.green
+                                  : Colors.red,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     CupertinoButton(
-                      onPressed: () {},
+                      onPressed: isLoading ? null : _handleStartServer,
                       color: Colors.white,
+                      disabledColor: Colors.grey[400]!,
                       child: Text(
                         'Activate',
                         style: TextStyle(
@@ -94,8 +240,9 @@ class _HitTargetScreenState extends State<HitTargetScreen> {
                     ),
                     SizedBox(width: 20),
                     CupertinoButton(
-                      onPressed: () {},
+                      onPressed: isLoading ? null : _handleStopServer,
                       color: Colors.redAccent,
+                      disabledColor: Colors.redAccent.withAlpha(128),
                       child: Text(
                         'Stop',
                         style: TextStyle(
@@ -298,25 +445,43 @@ class _HitTargetScreenState extends State<HitTargetScreen> {
                 SizedBox(height: 50),
                 Container(
                   decoration: BoxDecoration(
-                    border: Border.all(color: Colors.white, width: 5),
+                    border: Border.all(
+                      color: isLoading ? Colors.grey : Colors.white,
+                      width: 5,
+                    ),
                     borderRadius: BorderRadius.circular(100),
                   ),
                   child: CupertinoButton(
-                    onPressed: () {
-                      if (yellowSelected || redSelected || blueSelected) {
-                        error = false;
-                      } else {
-                        error = true;
-                      }
-                      setState(() {
-                        redSelected = false;
-                        blueSelected = false;
-                        yellowSelected = false;
-                      });
-                    },
+                    onPressed:
+                        isLoading
+                            ? null
+                            : () {
+                              if (redSelected) {
+                                _handleFireColor('red');
+                                error = false;
+                              } else if (blueSelected) {
+                                _handleFireColor('blue');
+                                error = false;
+                              } else if (yellowSelected) {
+                                _handleFireColor('yellow');
+                                error = false;
+                              } else {
+                                setState(() {
+                                  error = true;
+                                });
+                                return;
+                              }
+
+                              setState(() {
+                                redSelected = false;
+                                blueSelected = false;
+                                yellowSelected = false;
+                              });
+                            },
                     minSize: 100,
                     borderRadius: BorderRadius.circular(50),
                     color: Colors.red,
+                    disabledColor: Colors.red.withAlpha(128),
                     child: Text(
                       'Shoot',
                       style: TextStyle(
