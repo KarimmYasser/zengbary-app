@@ -1,12 +1,71 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:zengbary/http_client.dart';
+import 'package:zengbary/setting_screen.dart';
 
 import 'custom_drawer.dart';
 import 'home_screen.dart';
 
-class FindBallScreen extends StatelessWidget {
+class FindBallScreen extends StatefulWidget {
   const FindBallScreen({super.key});
+
+  @override
+  State<FindBallScreen> createState() => _FindBallScreenState();
+}
+
+class _FindBallScreenState extends State<FindBallScreen> {
+  // Replace single isLoading with specific loading states
+  bool isStartLoading = false;
+  bool isStopLoading = false;
+
+  // Start server function
+  Future<void> _handleStartServer() async {
+    setState(() {
+      isStartLoading = true;
+    });
+
+    try {
+      final response = await HttpHelper.get("changeGame?game=cups");
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(response)));
+    } catch (error) {
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error starting server: $error')));
+    } finally {
+      setState(() {
+        isStartLoading = false;
+      });
+    }
+  }
+
+  // Stop server function
+  Future<void> _handleStopServer() async {
+    setState(() {
+      isStopLoading = true;
+    });
+
+    try {
+      final response = await HttpHelper.get("changeGame?game=idle");
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(response)));
+    } catch (error) {
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error stopping server: $error')));
+    } finally {
+      setState(() {
+        isStopLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -37,12 +96,25 @@ class FindBallScreen extends StatelessWidget {
               },
             ),
           ),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 6.0),
+            child: IconButton(
+              icon: Icon(Iconsax.setting, color: Colors.white),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => SettingScreen()),
+                );
+              },
+            ),
+          ),
         ],
       ),
       drawer: CustomDrawer(),
       backgroundColor: Colors.black,
       body: Container(
         width: double.infinity,
+        height: double.infinity,
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [Colors.black, Color(0xFF232323)],
@@ -50,58 +122,54 @@ class FindBallScreen extends StatelessWidget {
             end: Alignment.bottomCenter,
           ),
         ),
-        child: Column(
-          children: [
-            SizedBox(height: 20),
-            CupertinoButton(
-              onPressed: () {},
-              color: Colors.white,
-              child: Text(
-                'Activate',
-                style: TextStyle(
-                  color: Colors.black,
-                  fontFamily: 'Urbanist',
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    CupertinoButton(
+                      onPressed: isStartLoading ? null : _handleStartServer,
+                      color: Colors.white,
+                      disabledColor: Colors.grey[400]!,
+                      child:
+                          isStartLoading
+                              ? CupertinoActivityIndicator(color: Colors.black)
+                              : Text(
+                                'Activate',
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontFamily: 'Urbanist',
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                ),
+                              ),
+                    ),
+                    SizedBox(width: 20),
+                    CupertinoButton(
+                      onPressed: isStopLoading ? null : _handleStopServer,
+                      color: Colors.redAccent,
+                      disabledColor: Colors.redAccent.withAlpha(128),
+                      child:
+                          isStopLoading
+                              ? CupertinoActivityIndicator()
+                              : Text(
+                                'Stop',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontFamily: 'Urbanist',
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                ),
+                              ),
+                    ),
+                  ],
                 ),
-              ),
+              ],
             ),
-            SizedBox(height: 70),
-            Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  CupertinoButton(
-                    onPressed: () {},
-                    color: Colors.orange,
-                    minSize: 100,
-                    child: Text(
-                      'Detect',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontFamily: 'Urbanist',
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ),
-                  SizedBox(width: 20),
-                  CupertinoButton(
-                    onPressed: () {},
-                    color: Colors.green,
-                    minSize: 100,
-                    child: Text(
-                      'Guess',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontFamily: 'Urbanist',
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ),
-                ]
-            )
-          ],
+          ),
         ),
       ),
     );

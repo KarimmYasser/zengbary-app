@@ -1,8 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
+import 'package:dio/dio.dart';
 
 import 'custom_drawer.dart';
 import 'home_screen.dart';
@@ -21,20 +20,81 @@ class _HitTargetScreenState extends State<HitTargetScreen> {
   bool error = false;
   String baseUrl = 'http://192.168.1.16:5000'; // Default API URL
   String serverStatus = 'stopped'; // Initial server status
+  late Dio dio; // Dio instance
 
   // Replace single isLoading with specific loading states
   bool isStartLoading = false;
   bool isStopLoading = false;
   bool isShootLoading = false;
 
+  @override
+  void initState() {
+    super.initState();
+    _initDio();
+  }
+
+  void _initDio() {
+    dio = Dio(
+      BaseOptions(
+        baseUrl: baseUrl,
+        connectTimeout: const Duration(seconds: 7),
+        receiveTimeout: const Duration(seconds: 7),
+        sendTimeout: const Duration(seconds: 7),
+      ),
+    );
+  }
+
   void _updateBaseUrl(String value) {
     setState(() {
       baseUrl = value; // Update the baseUrl
+      _initDio(); // Reinitialize Dio with new baseUrl
     });
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text('Base URL updated successfully!')));
+  }
+
+  // Utility method to extract meaningful error messages from Dio errors
+  String _handleDioError(dynamic error) {
+    if (error is DioException) {
+      switch (error.type) {
+        case DioExceptionType.connectionTimeout:
+          return 'Connection timed out. Please check your internet connection.';
+        case DioExceptionType.sendTimeout:
+          return 'Send timeout. Please try again later.';
+        case DioExceptionType.receiveTimeout:
+          return 'Receive timeout. Server is taking too long to respond.';
+        case DioExceptionType.badResponse:
+          final statusCode = error.response?.statusCode;
+          final responseData = error.response?.data;
+          if (responseData is Map && responseData.containsKey('message')) {
+            return 'Server error (${statusCode}): ${responseData['message']}';
+          }
+          return 'Server error (${statusCode}): ${error.response?.statusMessage}';
+        case DioExceptionType.cancel:
+          return 'Request was cancelled.';
+        case DioExceptionType.connectionError:
+          return 'Connection error. Please check your internet connection.';
+        case DioExceptionType.badCertificate:
+          return 'Bad certificate. Please check server configuration.';
+        case DioExceptionType.unknown:
+          if (error.message?.contains('SocketException') ?? false) {
+            return 'Cannot connect to server. Please check server availability.';
+          }
+          return 'An unexpected error occurred: ${error.message}';
+      }
+    }
+    return error.toString();
+  }
+
+  // Show error message with SnackBar
+  void _showErrorSnackBar(String message) {
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message, style: TextStyle(fontWeight: FontWeight.w500)),
+        backgroundColor: Colors.red[200],
+        duration: Duration(seconds: 7),
+      ),
+    );
   }
 
   // Start server function
@@ -44,28 +104,32 @@ class _HitTargetScreenState extends State<HitTargetScreen> {
     });
 
     try {
-      final response = await http.post(
-        Uri.parse('$baseUrl/start'),
-        headers: {'Content-Type': 'application/json'},
+      final response = await dio.post(
+        '/start',
+        options: Options(headers: {'Content-Type': 'application/json'}),
       );
 
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
+        final data = response.data;
         setState(() {
           serverStatus = data['status'] ?? 'unknown';
         });
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Server started successfully')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Server started successfully'),
+            duration: Duration(seconds: 7),
+          ),
+        );
       } else {
-        throw Exception('Failed to start server');
+        throw DioException(
+          requestOptions: RequestOptions(path: '/start'),
+          response: response,
+        );
       }
     } catch (error) {
-      ScaffoldMessenger.of(context).hideCurrentSnackBar();
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error starting server: $error')));
+      final errorMessage = _handleDioError(error);
+      _showErrorSnackBar('Error starting server: $errorMessage');
     } finally {
       setState(() {
         isStartLoading = false;
@@ -80,28 +144,32 @@ class _HitTargetScreenState extends State<HitTargetScreen> {
     });
 
     try {
-      final response = await http.post(
-        Uri.parse('$baseUrl/stop'),
-        headers: {'Content-Type': 'application/json'},
+      final response = await dio.post(
+        '/stop',
+        options: Options(headers: {'Content-Type': 'application/json'}),
       );
 
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
+        final data = response.data;
         setState(() {
           serverStatus = data['status'] ?? 'unknown';
         });
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Server stopped successfully')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Server stopped successfully'),
+            duration: Duration(seconds: 7),
+          ),
+        );
       } else {
-        throw Exception('Failed to stop server');
+        throw DioException(
+          requestOptions: RequestOptions(path: '/stop'),
+          response: response,
+        );
       }
     } catch (error) {
-      ScaffoldMessenger.of(context).hideCurrentSnackBar();
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error stopping server: $error')));
+      final errorMessage = _handleDioError(error);
+      _showErrorSnackBar('Error stopping server: $errorMessage');
     } finally {
       setState(() {
         isStopLoading = false;
@@ -111,16 +179,16 @@ class _HitTargetScreenState extends State<HitTargetScreen> {
 
   // Fire color function
   Future<void> _handleFireColor(String color) async {
-    // Check if server is running before sending request
-    if (serverStatus != 'running') {
+    // Check if server is started before sending request
+    if (serverStatus != 'started') {
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Server is not running. Please activate the server first.',
+            'Server is not started. Please activate the server first.',
           ),
           backgroundColor: Colors.orange,
-          duration: Duration(seconds: 3),
+          duration: Duration(seconds: 7),
         ),
       );
       return;
@@ -131,29 +199,29 @@ class _HitTargetScreenState extends State<HitTargetScreen> {
     });
 
     try {
-      final response = await http.post(
-        Uri.parse('$baseUrl/color'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'color': color}),
+      final response = await dio.post(
+        '/color',
+        data: {'color': color},
+        options: Options(headers: {'Content-Type': 'application/json'}),
       );
 
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        setState(() {
-          serverStatus = data['status'] ?? 'unknown';
-        });
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Color $color fired successfully')),
+          SnackBar(
+            content: Text('Color $color fired successfully'),
+            duration: Duration(seconds: 7),
+          ),
         );
       } else {
-        throw Exception('Failed to fire color');
+        throw DioException(
+          requestOptions: RequestOptions(path: '/color'),
+          response: response,
+        );
       }
     } catch (error) {
-      ScaffoldMessenger.of(context).hideCurrentSnackBar();
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error firing color: $error')));
+      final errorMessage = _handleDioError(error);
+      _showErrorSnackBar('Error firing color: $errorMessage');
     } finally {
       setState(() {
         isShootLoading = false;
@@ -164,7 +232,7 @@ class _HitTargetScreenState extends State<HitTargetScreen> {
   @override
   Widget build(BuildContext context) {
     // Check if shoot action should be enabled based on server status
-    bool canShoot = serverStatus == 'running' && !isShootLoading;
+    bool canShoot = serverStatus == 'started' && !isShootLoading;
 
     return Scaffold(
       appBar: AppBar(
@@ -233,7 +301,7 @@ class _HitTargetScreenState extends State<HitTargetScreen> {
                         serverStatus,
                         style: TextStyle(
                           color:
-                              serverStatus == 'running'
+                              serverStatus == 'started'
                                   ? Colors.green
                                   : Colors.red,
                           fontWeight: FontWeight.bold,
@@ -295,14 +363,14 @@ class _HitTargetScreenState extends State<HitTargetScreen> {
                     hintText: 'Enter Target game server Base URL',
                     hintStyle: TextStyle(color: Colors.grey, fontSize: 14),
                   ),
-                  onSubmitted: _updateBaseUrl,
+                  onChanged: _updateBaseUrl,
                 ),
                 SizedBox(height: 20),
                 Text(
                   'Select a Color to Shoot:',
                   style: TextStyle(color: Colors.white, fontSize: 18),
                 ),
-                if (serverStatus != 'running')
+                if (serverStatus != 'started')
                   Padding(
                     padding: const EdgeInsets.only(top: 8.0),
                     child: Text(
@@ -489,7 +557,7 @@ class _HitTargetScreenState extends State<HitTargetScreen> {
                   ),
                   child: CupertinoButton(
                     onPressed:
-                        isShootLoading || serverStatus != 'running'
+                        isShootLoading || serverStatus != 'started'
                             ? null
                             : () {
                               if (redSelected) {
