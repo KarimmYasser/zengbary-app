@@ -18,6 +18,8 @@ class _TictactoeScreenState extends State<TictactoeScreen> {
   // Replace single isLoading with specific loading states
   bool isStartLoading = false;
   bool isStopLoading = false;
+  String selectedTurn = 'xoX'; // Default to X turn
+  String baseUrl = 'http://192.168.1.16:5000'; // Default API URL
 
   // Start server function
   Future<void> _handleStartServer() async {
@@ -26,7 +28,7 @@ class _TictactoeScreenState extends State<TictactoeScreen> {
     });
 
     try {
-      final response = await HttpHelper.get("changeGame?game=xo");
+      final response = await HttpHelper.get("changeGame?game=$selectedTurn");
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       ScaffoldMessenger.of(
         context,
@@ -127,43 +129,175 @@ class _TictactoeScreenState extends State<TictactoeScreen> {
             padding: const EdgeInsets.all(20),
             child: Column(
               children: [
+                Container(
+                  padding: EdgeInsets.all(15),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[850],
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Column(
+                    children: [
+                      Text(
+                        'Select Your Turn',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontFamily: 'Urbanist',
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                        ),
+                      ),
+                      SizedBox(height: 20),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          // X Turn Option
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  selectedTurn = 'xoX';
+                                });
+                              },
+                              child: Container(
+                                height: 120, // Fixed height
+                                padding: EdgeInsets.all(15),
+                                decoration: BoxDecoration(
+                                  color:
+                                      selectedTurn == 'xoX'
+                                          ? Colors.red
+                                          : Colors.grey[800],
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(
+                                    color:
+                                        selectedTurn == 'xoX'
+                                            ? Colors.white
+                                            : Colors.transparent,
+                                    width: 2,
+                                  ),
+                                ),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      'X',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 40,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    SizedBox(height: 5),
+                                    Text(
+                                      'You play first',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                          SizedBox(width: 20),
+                          // O Turn Option
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  selectedTurn = 'xoO';
+                                });
+                              },
+                              child: Container(
+                                height: 120, // Fixed height
+                                padding: EdgeInsets.all(15),
+                                decoration: BoxDecoration(
+                                  color:
+                                      selectedTurn == 'xoO'
+                                          ? Colors.blue
+                                          : Colors.grey[800],
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(
+                                    color:
+                                        selectedTurn == 'xoO'
+                                            ? Colors.white
+                                            : Colors.transparent,
+                                    width: 2,
+                                  ),
+                                ),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      'O',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 40,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    SizedBox(height: 5),
+                                    Text(
+                                      'Robot plays first',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(height: 30),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    CupertinoButton(
-                      onPressed: isStartLoading ? null : _handleStartServer,
-                      color: Colors.white,
-                      disabledColor: Colors.grey[400]!,
-                      child:
-                          isStartLoading
-                              ? CupertinoActivityIndicator(color: Colors.black)
-                              : Text(
-                                'Activate',
-                                style: TextStyle(
+                    Expanded(
+                      child: CupertinoButton(
+                        onPressed: isStartLoading ? null : _handleStartServer,
+                        color: Colors.white,
+                        disabledColor: Colors.grey[400]!,
+                        child:
+                            isStartLoading
+                                ? CupertinoActivityIndicator(
                                   color: Colors.black,
-                                  fontFamily: 'Urbanist',
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
+                                )
+                                : Text(
+                                  'Activate',
+                                  style: TextStyle(
+                                    color: Colors.black,
+                                    fontFamily: 'Urbanist',
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
                                 ),
-                              ),
+                      ),
                     ),
                     SizedBox(width: 20),
-                    CupertinoButton(
-                      onPressed: isStopLoading ? null : _handleStopServer,
-                      color: Colors.redAccent,
-                      disabledColor: Colors.redAccent.withAlpha(128),
-                      child:
-                          isStopLoading
-                              ? CupertinoActivityIndicator()
-                              : Text(
-                                'Stop',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontFamily: 'Urbanist',
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
+                    Expanded(
+                      child: CupertinoButton(
+                        onPressed: isStopLoading ? null : _handleStopServer,
+                        color: Colors.redAccent,
+                        disabledColor: Colors.redAccent.withAlpha(128),
+                        child:
+                            isStopLoading
+                                ? CupertinoActivityIndicator()
+                                : Text(
+                                  'Stop',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontFamily: 'Urbanist',
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
                                 ),
-                              ),
+                      ),
                     ),
                   ],
                 ),

@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 
 class HttpHelper {
   static String baseUrl =
-      'http://192.168.1.10'; // Replace with your API base URL
+      'http://192.168.1.3'; // Replace with your API base URL
 
   // Helper method to make a GET request
   static Future<String> get(String endpoint) async {

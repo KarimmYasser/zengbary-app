@@ -17,8 +17,10 @@ class _HitTargetScreenState extends State<HitTargetScreen> {
   bool redSelected = false;
   bool yellowSelected = false;
   bool blueSelected = false;
+  bool greenSelected = false; // Add green color selection state
   bool error = false;
-  String baseUrl = 'http://192.168.1.16:5000'; // Default API URL
+  TextEditingController baseUrlController = TextEditingController();
+  String baseUrl = 'http://192.168.1.11:5000'; // Default API URL
   String serverStatus = 'stopped'; // Initial server status
   late Dio dio; // Dio instance
 
@@ -30,6 +32,8 @@ class _HitTargetScreenState extends State<HitTargetScreen> {
   @override
   void initState() {
     super.initState();
+    baseUrlController.text =
+        baseUrl; // Initialize the controller with the default URL
     _initDio();
   }
 
@@ -37,9 +41,9 @@ class _HitTargetScreenState extends State<HitTargetScreen> {
     dio = Dio(
       BaseOptions(
         baseUrl: baseUrl,
-        connectTimeout: const Duration(seconds: 7),
-        receiveTimeout: const Duration(seconds: 7),
-        sendTimeout: const Duration(seconds: 7),
+        connectTimeout: const Duration(seconds: 30),
+        receiveTimeout: const Duration(seconds: 30),
+        sendTimeout: const Duration(seconds: 30),
       ),
     );
   }
@@ -314,45 +318,52 @@ class _HitTargetScreenState extends State<HitTargetScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    CupertinoButton(
-                      onPressed: isStartLoading ? null : _handleStartServer,
-                      color: Colors.white,
-                      disabledColor: Colors.grey[400]!,
-                      child:
-                          isStartLoading
-                              ? CupertinoActivityIndicator(color: Colors.black)
-                              : Text(
-                                'Activate',
-                                style: TextStyle(
+                    Expanded(
+                      child: CupertinoButton(
+                        onPressed: isStartLoading ? null : _handleStartServer,
+                        color: Colors.white,
+                        disabledColor: Colors.grey[400]!,
+                        child:
+                            isStartLoading
+                                ? CupertinoActivityIndicator(
                                   color: Colors.black,
-                                  fontFamily: 'Urbanist',
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
+                                )
+                                : Text(
+                                  'Activate',
+                                  style: TextStyle(
+                                    color: Colors.black,
+                                    fontFamily: 'Urbanist',
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
                                 ),
-                              ),
+                      ),
                     ),
                     SizedBox(width: 20),
-                    CupertinoButton(
-                      onPressed: isStopLoading ? null : _handleStopServer,
-                      color: Colors.redAccent,
-                      disabledColor: Colors.redAccent.withAlpha(128),
-                      child:
-                          isStopLoading
-                              ? CupertinoActivityIndicator()
-                              : Text(
-                                'Stop',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontFamily: 'Urbanist',
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
+                    Expanded(
+                      child: CupertinoButton(
+                        onPressed: isStopLoading ? null : _handleStopServer,
+                        color: Colors.redAccent,
+                        disabledColor: Colors.redAccent.withAlpha(128),
+                        child:
+                            isStopLoading
+                                ? CupertinoActivityIndicator()
+                                : Text(
+                                  'Stop',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontFamily: 'Urbanist',
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
                                 ),
-                              ),
+                      ),
                     ),
                   ],
                 ),
                 SizedBox(height: 20),
                 TextField(
+                  controller: baseUrlController,
                   style: TextStyle(color: Colors.white),
                   decoration: InputDecoration(
                     filled: true,
@@ -379,8 +390,10 @@ class _HitTargetScreenState extends State<HitTargetScreen> {
                     ),
                   ),
                 SizedBox(height: 20),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                Wrap(
+                  spacing: 10,
+                  runSpacing: 15,
+                  alignment: WrapAlignment.center,
                   children: [
                     InkWell(
                       onTap: () {
@@ -388,11 +401,12 @@ class _HitTargetScreenState extends State<HitTargetScreen> {
                           redSelected = !redSelected;
                           blueSelected = false;
                           yellowSelected = false;
+                          greenSelected = false;
                         });
                       },
                       child: Container(
-                        width: 80,
-                        height: 110,
+                        width: 70,
+                        height: 100,
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(10),
                           color: Colors.grey,
@@ -405,6 +419,7 @@ class _HitTargetScreenState extends State<HitTargetScreen> {
                           ),
                         ),
                         child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             SizedBox(height: 5),
                             Row(
@@ -440,67 +455,14 @@ class _HitTargetScreenState extends State<HitTargetScreen> {
                       onTap: () {
                         setState(() {
                           redSelected = false;
-                          blueSelected = !blueSelected;
-                          yellowSelected = false;
-                        });
-                      },
-                      child: Container(
-                        width: 80,
-                        height: 110,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10),
-                          color: Colors.grey,
-                          border: Border.all(
-                            color:
-                                blueSelected
-                                    ? Colors.purple
-                                    : Colors.transparent,
-                            width: 2,
-                          ),
-                        ),
-                        child: Column(
-                          children: [
-                            SizedBox(height: 5),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                if (blueSelected)
-                                  Icon(
-                                    Iconsax.tick_circle5,
-                                    color: Colors.purple,
-                                    size: 15,
-                                  ),
-                                SizedBox(width: 12, height: 15),
-                              ],
-                            ),
-                            Icon(
-                              Iconsax.book_square1,
-                              color: Colors.indigo,
-                              size: 50,
-                            ),
-                            SizedBox(height: 5),
-                            Text(
-                              'Blue',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 12,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    InkWell(
-                      onTap: () {
-                        setState(() {
-                          redSelected = false;
                           blueSelected = false;
                           yellowSelected = !yellowSelected;
+                          greenSelected = false;
                         });
                       },
                       child: Container(
-                        width: 80,
-                        height: 110,
+                        width: 70,
+                        height: 100,
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(10),
                           color: Colors.grey,
@@ -513,6 +475,7 @@ class _HitTargetScreenState extends State<HitTargetScreen> {
                           ),
                         ),
                         child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             SizedBox(height: 5),
                             Row(
@@ -535,6 +498,118 @@ class _HitTargetScreenState extends State<HitTargetScreen> {
                             SizedBox(height: 5),
                             Text(
                               'Yellow',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    InkWell(
+                      onTap: () {
+                        setState(() {
+                          redSelected = false;
+                          blueSelected = false;
+                          yellowSelected = false;
+                          greenSelected = !greenSelected;
+                        });
+                      },
+                      child: Container(
+                        width: 70,
+                        height: 100,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10),
+                          color: Colors.grey,
+                          border: Border.all(
+                            color:
+                                greenSelected
+                                    ? Colors.purple
+                                    : Colors.transparent,
+                            width: 2,
+                          ),
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            SizedBox(height: 5),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                if (greenSelected)
+                                  Icon(
+                                    Iconsax.tick_circle5,
+                                    color: Colors.purple,
+                                    size: 15,
+                                  ),
+                                SizedBox(width: 12, height: 15),
+                              ],
+                            ),
+                            Icon(
+                              Iconsax.book_square1,
+                              color: Colors.green,
+                              size: 50,
+                            ),
+                            SizedBox(height: 5),
+                            Text(
+                              'Green',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    InkWell(
+                      onTap: () {
+                        setState(() {
+                          redSelected = false;
+                          blueSelected = !blueSelected;
+                          yellowSelected = false;
+                          greenSelected = false;
+                        });
+                      },
+                      child: Container(
+                        width: 70,
+                        height: 100,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10),
+                          color: Colors.grey,
+                          border: Border.all(
+                            color:
+                                blueSelected
+                                    ? Colors.purple
+                                    : Colors.transparent,
+                            width: 2,
+                          ),
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            SizedBox(height: 5),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                if (blueSelected)
+                                  Icon(
+                                    Iconsax.tick_circle5,
+                                    color: Colors.purple,
+                                    size: 15,
+                                  ),
+                                SizedBox(width: 12, height: 15),
+                              ],
+                            ),
+                            Icon(
+                              Iconsax.book_square1,
+                              color: Colors.indigo,
+                              size: 50,
+                            ),
+                            SizedBox(height: 5),
+                            Text(
+                              'Blue',
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 12,
@@ -569,6 +644,9 @@ class _HitTargetScreenState extends State<HitTargetScreen> {
                               } else if (yellowSelected) {
                                 _handleFireColor('yellow');
                                 error = false;
+                              } else if (greenSelected) {
+                                _handleFireColor('green');
+                                error = false;
                               } else {
                                 setState(() {
                                   error = true;
@@ -580,6 +658,7 @@ class _HitTargetScreenState extends State<HitTargetScreen> {
                                 redSelected = false;
                                 blueSelected = false;
                                 yellowSelected = false;
+                                greenSelected = false;
                               });
                             },
                     minSize: 100,

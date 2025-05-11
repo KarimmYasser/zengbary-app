@@ -130,40 +130,46 @@ class _MemoryScreenState extends State<MemoryScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    CupertinoButton(
-                      onPressed: isStartLoading ? null : _handleStartServer,
-                      color: Colors.white,
-                      disabledColor: Colors.grey[400]!,
-                      child:
-                          isStartLoading
-                              ? CupertinoActivityIndicator(color: Colors.black)
-                              : Text(
-                                'Activate',
-                                style: TextStyle(
+                    Expanded(
+                      child: CupertinoButton(
+                        onPressed: isStartLoading ? null : _handleStartServer,
+                        color: Colors.white,
+                        disabledColor: Colors.grey[400]!,
+                        child:
+                            isStartLoading
+                                ? CupertinoActivityIndicator(
                                   color: Colors.black,
-                                  fontFamily: 'Urbanist',
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
+                                )
+                                : Text(
+                                  'Activate',
+                                  style: TextStyle(
+                                    color: Colors.black,
+                                    fontFamily: 'Urbanist',
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
                                 ),
-                              ),
+                      ),
                     ),
                     SizedBox(width: 20),
-                    CupertinoButton(
-                      onPressed: isStopLoading ? null : _handleStopServer,
-                      color: Colors.redAccent,
-                      disabledColor: Colors.redAccent.withAlpha(128),
-                      child:
-                          isStopLoading
-                              ? CupertinoActivityIndicator()
-                              : Text(
-                                'Stop',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontFamily: 'Urbanist',
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
+                    Expanded(
+                      child: CupertinoButton(
+                        onPressed: isStopLoading ? null : _handleStopServer,
+                        color: Colors.redAccent,
+                        disabledColor: Colors.redAccent.withAlpha(128),
+                        child:
+                            isStopLoading
+                                ? CupertinoActivityIndicator()
+                                : Text(
+                                  'Stop',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontFamily: 'Urbanist',
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
                                 ),
-                              ),
+                      ),
                     ),
                   ],
                 ),
