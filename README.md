@@ -1,5 +1,7 @@
 # Zengbary
 
+![Zengbary Cover](zengbary.png)
+
 A Flutter application for remotely controlling color-based target shooting and playing games like Tic Tac Toe through a backend server.
 
 ## Features
